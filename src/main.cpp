@@ -14,7 +14,7 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using std::vector;
 
-void check_arguments(int argc, char* argv[]) {
+void check_arguments(int argc, char *argv[]) {
   string usage_instructions = "Usage instructions: ";
   usage_instructions += argv[0];
   usage_instructions += " path/to/input.txt output.txt";
@@ -37,8 +37,8 @@ void check_arguments(int argc, char* argv[]) {
   }
 }
 
-void check_files(ifstream& in_file, string& in_name,
-                 ofstream& out_file, string& out_name) {
+void check_files(ifstream &in_file, string &in_name,
+                 ofstream &out_file, string &out_name) {
   if (!in_file.is_open()) {
     cerr << "Cannot open input file: " << in_name << endl;
     exit(EXIT_FAILURE);
@@ -50,7 +50,7 @@ void check_files(ifstream& in_file, string& in_name,
   }
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 
   check_arguments(argc, argv);
 
@@ -89,8 +89,8 @@ int main(int argc, char* argv[]) {
       // read measurements at this timestamp
       meas_package.sensor_type_ = MeasurementPackage::LASER;
       meas_package.raw_measurements_ = VectorXd(2);
-      float px;
-      float py;
+      double px;
+      double py;
       iss >> px;
       iss >> py;
       meas_package.raw_measurements_ << px, py;
@@ -103,9 +103,9 @@ int main(int argc, char* argv[]) {
       // read measurements at this timestamp
       meas_package.sensor_type_ = MeasurementPackage::RADAR;
       meas_package.raw_measurements_ = VectorXd(3);
-      float ro;
-      float phi;
-      float ro_dot;
+      double ro;
+      double phi;
+      double ro_dot;
       iss >> ro;
       iss >> phi;
       iss >> ro_dot;
@@ -115,18 +115,18 @@ int main(int argc, char* argv[]) {
       measurement_pack_list.push_back(meas_package);
     }
 
-      // read ground truth data to compare later
-      float x_gt;
-      float y_gt;
-      float vx_gt;
-      float vy_gt;
-      iss >> x_gt;
-      iss >> y_gt;
-      iss >> vx_gt;
-      iss >> vy_gt;
-      gt_package.gt_values_ = VectorXd(4);
-      gt_package.gt_values_ << x_gt, y_gt, vx_gt, vy_gt;
-      gt_pack_list.push_back(gt_package);
+    // read ground truth data to compare later
+    double x_gt;
+    double y_gt;
+    double vx_gt;
+    double vy_gt;
+    iss >> x_gt;
+    iss >> y_gt;
+    iss >> vx_gt;
+    iss >> vy_gt;
+    gt_package.gt_values_ = VectorXd(4);
+    gt_package.gt_values_ << x_gt, y_gt, vx_gt, vy_gt;
+    gt_pack_list.push_back(gt_package);
   }
 
   // Create a UKF instance
@@ -142,14 +142,14 @@ int main(int argc, char* argv[]) {
   size_t number_of_measurements = measurement_pack_list.size();
 
   // column names for output file
-  out_file_ << "time_stamp" << "\t";  
+  out_file_ << "time_stamp" << "\t";
   out_file_ << "px_state" << "\t";
   out_file_ << "py_state" << "\t";
   out_file_ << "v_state" << "\t";
   out_file_ << "yaw_angle_state" << "\t";
   out_file_ << "yaw_rate_state" << "\t";
   out_file_ << "sensor_type" << "\t";
-  out_file_ << "NIS" << "\t";  
+  out_file_ << "NIS" << "\t";
   out_file_ << "px_measured" << "\t";
   out_file_ << "py_measured" << "\t";
   out_file_ << "px_ground_truth" << "\t";
@@ -184,7 +184,8 @@ int main(int argc, char* argv[]) {
       out_file_ << measurement_pack_list[k].raw_measurements_(0) << "\t";
       out_file_ << measurement_pack_list[k].raw_measurements_(1) << "\t";
 
-    } else if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::RADAR) {
+    } else if (measurement_pack_list[k].sensor_type_ ==
+               MeasurementPackage::RADAR) {
       // sensor type
       out_file_ << "radar" << "\t";
 
@@ -192,8 +193,8 @@ int main(int argc, char* argv[]) {
       out_file_ << ukf.NIS_radar_ << "\t";
 
       // output radar measurement in cartesian coordinates
-      float ro = measurement_pack_list[k].raw_measurements_(0);
-      float phi = measurement_pack_list[k].raw_measurements_(1);
+      double ro = measurement_pack_list[k].raw_measurements_(0);
+      double phi = measurement_pack_list[k].raw_measurements_(1);
       out_file_ << ro * cos(phi) << "\t"; // px measurement
       out_file_ << ro * sin(phi) << "\t"; // py measurement
     }
@@ -207,13 +208,13 @@ int main(int argc, char* argv[]) {
     // convert ukf x vector to cartesian to compare to ground truth
     VectorXd ukf_x_cartesian_ = VectorXd(4);
 
-    float x_estimate_ = ukf.x_(0);
-    float y_estimate_ = ukf.x_(1);
-    float vx_estimate_ = ukf.x_(2) * cos(ukf.x_(3));
-    float vy_estimate_ = ukf.x_(2) * sin(ukf.x_(3));
-    
+    double x_estimate_ = ukf.x_(0);
+    double y_estimate_ = ukf.x_(1);
+    double vx_estimate_ = ukf.x_(2) * cos(ukf.x_(3));
+    double vy_estimate_ = ukf.x_(2) * sin(ukf.x_(3));
+
     ukf_x_cartesian_ << x_estimate_, y_estimate_, vx_estimate_, vy_estimate_;
-    
+
     estimations.push_back(ukf_x_cartesian_);
     ground_truth.push_back(gt_pack_list[k].gt_values_);
 
@@ -221,7 +222,8 @@ int main(int argc, char* argv[]) {
 
   // compute the accuracy (RMSE)
   Tools tools;
-  cout << "RMSE" << endl << tools.CalculateRMSE(estimations, ground_truth) << endl;
+  cout << "RMSE" << endl << tools.CalculateRMSE(estimations, ground_truth)
+       << endl;
 
   // close files
   if (out_file_.is_open()) {

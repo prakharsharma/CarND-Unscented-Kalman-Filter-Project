@@ -74,6 +74,9 @@ public:
   ///* the current NIS for laser
   double NIS_laser_;
 
+  ///* timestamp of the previous reading
+  long long previous_timestamp_;
+
   /**
    * Constructor
    */
@@ -108,6 +111,16 @@ public:
    * @param meas_package The measurement at k+1
    */
   void UpdateRadar(MeasurementPackage meas_package);
+
+  void ProcessFirstMeasurement(MeasurementPackage meas_package);
+
+  void ProcessSubsequentMeasurement(MeasurementPackage meas_package);
+
+  void AugmentedSigmaPoints(MatrixXd&);
+
+  void SigmaPointPrediction(const MatrixXd&, double);
+
+  void PredictMeanAndCovariance();
 };
 
 #endif /* UKF_H */
