@@ -54,7 +54,7 @@ public:
   double std_radphi_;
 
   ///* Radar measurement noise standard deviation radius change in m/s
-  double std_radrd_ ;
+  double std_radrd_;
 
   ///* Weights of sigma points
   VectorXd weights_;
@@ -76,6 +76,24 @@ public:
 
   ///* timestamp of the previous reading
   long long previous_timestamp_;
+
+  ///* Radar measurement dimension
+  int n_radz_;
+
+  ///* Radar measurement noise covariance matrix
+  MatrixXd R_rad_;
+
+  ///* Laser measurement dimension
+  int n_lasz_;
+
+  ///* Laser measurement noise covairance matrix
+  MatrixXd R_las_;
+
+  unsigned int n_total_readings_laser_;
+  unsigned int n_total_readings_radar_;
+
+  unsigned int n_processed_readings_laser_;
+  unsigned int n_processed_readings_radar_;
 
   /**
    * Constructor
@@ -121,6 +139,24 @@ public:
   void SigmaPointPrediction(const MatrixXd&, double);
 
   void PredictMeanAndCovariance();
+
+  void PredictRadarMeasurement(MatrixXd&, VectorXd&, MatrixXd&);
+
+  void UpdateStateUsingRadarMeasurement(
+      const MeasurementPackage&,
+      const MatrixXd&,
+      const VectorXd&,
+      const MatrixXd&
+  );
+
+  void PredictLaserMeasurement(MatrixXd&, VectorXd&, MatrixXd&);
+
+  void UpdateStateUsingLaserMeasurement(
+      const MeasurementPackage&,
+      const MatrixXd&,
+      const VectorXd&,
+      const MatrixXd&
+  );
 };
 
 #endif /* UKF_H */

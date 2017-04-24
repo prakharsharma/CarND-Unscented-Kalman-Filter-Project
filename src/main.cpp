@@ -69,6 +69,9 @@ int main(int argc, char *argv[]) {
   vector<MeasurementPackage> measurement_pack_list;
   vector<GroundTruthPackage> gt_pack_list;
 
+  unsigned int n_readings_radar = 0;
+  unsigned int n_readings_laser = 0;
+
   string line;
 
   // prep the measurement packages (each line represents a measurement at a
@@ -85,6 +88,7 @@ int main(int argc, char *argv[]) {
 
     if (sensor_type.compare("L") == 0) {
       // laser measurement
+      n_readings_laser++;
 
       // read measurements at this timestamp
       meas_package.sensor_type_ = MeasurementPackage::LASER;
@@ -99,6 +103,7 @@ int main(int argc, char *argv[]) {
       measurement_pack_list.push_back(meas_package);
     } else if (sensor_type.compare("R") == 0) {
       // radar measurement
+      n_readings_radar++;
 
       // read measurements at this timestamp
       meas_package.sensor_type_ = MeasurementPackage::RADAR;
@@ -129,8 +134,15 @@ int main(int argc, char *argv[]) {
     gt_pack_list.push_back(gt_package);
   }
 
+  cout << "Populated measurement and ground truth packages" << endl;
+  cout << "Total readings: " << measurement_pack_list.size() <<
+       " Laser readings: " << n_readings_laser <<
+       " Radar readings: " << n_readings_radar << endl;
+
   // Create a UKF instance
   UKF ukf;
+  ukf.n_total_readings_laser_ = n_readings_laser;
+  ukf.n_total_readings_radar_ = n_readings_radar;
 
   // used to compute the RMSE later
   vector<VectorXd> estimations;
@@ -206,7 +218,7 @@ int main(int argc, char *argv[]) {
     out_file_ << gt_pack_list[k].gt_values_(3) << "\n";
 
     // convert ukf x vector to cartesian to compare to ground truth
-    VectorXd ukf_x_cartesian_ = VectorXd(4);
+    VectorXd ukf_x_cartesian_(4);
 
     double x_estimate_ = ukf.x_(0);
     double y_estimate_ = ukf.x_(1);
@@ -217,8 +229,9 @@ int main(int argc, char *argv[]) {
 
     estimations.push_back(ukf_x_cartesian_);
     ground_truth.push_back(gt_pack_list[k].gt_values_);
-
   }
+
+  cout << "Done with sensor fusion" << endl;
 
   // compute the accuracy (RMSE)
   Tools tools;
