@@ -5,6 +5,7 @@
 #include "Eigen/Dense"
 #include <vector>
 #include <string>
+#include <map>
 #include <fstream>
 #include "tools.h"
 
@@ -89,11 +90,16 @@ public:
   ///* Laser measurement noise covairance matrix
   MatrixXd R_las_;
 
+  ///* variables to keep track of number of readings
   unsigned int n_total_readings_laser_;
   unsigned int n_total_readings_radar_;
 
   unsigned int n_processed_readings_laser_;
   unsigned int n_processed_readings_radar_;
+
+  ///* to keep track of various NIS percentile buckets
+  std::map<std::string, std::pair<double, uint>> nis_buckets_radar_;
+  std::map<std::string, std::pair<double, uint>> nis_buckets_laser_;
 
   /**
    * Constructor

@@ -16,7 +16,7 @@ UKF::UKF() {
   use_laser_ = true;
 
   // if this is false, radar measurements will be ignored (except during init)
-  use_radar_ = false;
+  use_radar_ = true;
 
   // dimensions of the state vector
   n_x_ = 5;
@@ -34,20 +34,21 @@ UKF::UKF() {
 
   // initial covariance matrix
   P_ = MatrixXd(n_x_, n_x_);
-  P_ <<     0.0043,   -0.0013,    0.0030,   -0.0022,   -0.0020,
-      -0.0013,    0.0077,    0.0011,    0.0071,    0.0060,
-      0.0030,    0.0011,    0.0054,    0.0007,    0.0008,
-      -0.0022,    0.0071,    0.0007,    0.0098,    0.0100,
-      -0.0020,    0.0060,    0.0008,    0.0100,    0.0123;
+//  P_ <<     0.0043,   -0.0013,    0.0030,   -0.0022,   -0.0020,
+//      -0.0013,    0.0077,    0.0011,    0.0071,    0.0060,
+//      0.0030,    0.0011,    0.0054,    0.0007,    0.0008,
+//      -0.0022,    0.0071,    0.0007,    0.0098,    0.0100,
+//      -0.0020,    0.0060,    0.0008,    0.0100,    0.0123;
+  P_.fill(0.0);
 
   // initial predicted sigma points matrix
   Xsig_pred_ = MatrixXd(n_x_, 2 * n_aug_ + 1);
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 30;
+  std_a_ = 3;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 30;
+  std_yawdd_ = 2;
 
   // Laser measurement noise standard deviation position1 in m
   std_laspx_ = 0.15;
@@ -108,6 +109,19 @@ UKF::UKF() {
   n_total_readings_radar_ = 0;
   n_processed_readings_laser_ = 0;
   n_processed_readings_radar_ = 0;
+
+  // Initialize radar NIS buckets
+  nis_buckets_radar_["0.95"] = pair<double, uint>(0.352, 0);
+  nis_buckets_radar_["0.90"] = pair<double, uint>(0.584, 0);
+  nis_buckets_radar_["0.10"] = pair<double, uint>(6.251, 0);
+  nis_buckets_radar_["0.05"] = pair<double, uint>(7.815, 0);
+
+  // Initialize laser NIS buckets
+  nis_buckets_laser_["0.95"] = pair<double, uint>(0.103, 0);
+  nis_buckets_laser_["0.90"] = pair<double, uint>(0.211, 0);
+  nis_buckets_laser_["0.10"] = pair<double, uint>(4.605, 0);
+  nis_buckets_laser_["0.05"] = pair<double, uint>(5.991, 0);
+
 }
 
 UKF::~UKF() {}
@@ -354,6 +368,17 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
       << "x_\n" << x_ << endl
       << "P_\n" << P_ << endl
       <<"NIS_laser_ " << NIS_laser_ << endl;
+
+  for (auto it = nis_buckets_laser_.begin();
+       it != nis_buckets_laser_.end(); it++) {
+    string key = it->first;
+    double threshold = it->second.first;
+    uint counter = it->second.second;
+    if (NIS_laser_ >= threshold) {
+      counter++;
+    }
+    nis_buckets_laser_[key] = pair<double, uint>(threshold, counter);
+  }
 }
 
 void UKF::PredictLaserMeasurement(MatrixXd& Zsig, VectorXd& z_pred,
@@ -461,6 +486,18 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
       << "x_\n" << x_ << endl
       << "P_\n" << P_ << endl
       <<"NIS_radar_ " << NIS_radar_ << endl;
+
+  for (auto it = nis_buckets_radar_.begin();
+       it != nis_buckets_radar_.end(); it++) {
+    string key = it->first;
+    double threshold = it->second.first;
+    uint counter = it->second.second;
+    if (NIS_radar_ >= threshold) {
+      counter++;
+    }
+    nis_buckets_radar_[key] = pair<double, uint>(threshold, counter);
+  }
+
 }
 
 void UKF::PredictRadarMeasurement(MatrixXd& Zsig, VectorXd& z_pred,

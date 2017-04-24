@@ -238,6 +238,36 @@ int main(int argc, char *argv[]) {
   cout << "RMSE" << endl << tools.CalculateRMSE(estimations, ground_truth)
        << endl;
 
+  // report NIS statistics for radar
+  cout << "NIS statistics for Radar" << endl;
+  for (auto it = ukf.nis_buckets_radar_.begin();
+       it != ukf.nis_buckets_radar_.end(); it++) {
+    string key = it->first;
+    double threshold = it->second.first;
+    uint counter = it->second.second;
+    double percentage = counter / double(ukf.n_total_readings_radar_) * 100;
+    cout
+        << "Key: " << key
+        << ", counts: " << counter
+        << ", percent: " << percentage
+        << endl;
+  }
+
+  // report NIS statistics for laser
+  cout << "NIS statistics for Laser" << endl;
+  for (auto it = ukf.nis_buckets_laser_.begin();
+       it != ukf.nis_buckets_laser_.end(); it++) {
+    string key = it->first;
+    double threshold = it->second.first;
+    uint counter = it->second.second;
+    double percentage = counter / double(ukf.n_total_readings_laser_) * 100;
+    cout
+        << "Key: " << key
+        << ", counts: " << counter
+        << ", percent: " << percentage
+        << endl;
+  }
+
   // close files
   if (out_file_.is_open()) {
     out_file_.close();
