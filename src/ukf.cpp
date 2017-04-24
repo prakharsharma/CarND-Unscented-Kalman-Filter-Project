@@ -185,15 +185,15 @@ void UKF::ProcessSubsequentMeasurement(MeasurementPackage meas_package) {
     UpdateLidar(meas_package);
   }
 
-  cout
-      << "################################################"
-      << " Processed "
-      << n_processed_readings_radar_ << "/" << n_total_readings_radar_
-      << " radar readings and "
-      << n_processed_readings_laser_ << "/" << n_total_readings_laser_
-      << " laser readings "
-      << "################################################"
-      << endl;
+//  cout
+//      << "################################################"
+//      << " Processed "
+//      << n_processed_readings_radar_ << "/" << n_total_readings_radar_
+//      << " radar readings and "
+//      << n_processed_readings_laser_ << "/" << n_total_readings_laser_
+//      << " laser readings "
+//      << "################################################"
+//      << endl;
 }
 
 /**
@@ -212,16 +212,16 @@ void UKF::Prediction(double delta_t) {
   // 1. Generate augmented sigma points
   MatrixXd Xsig_aug(n_aug_, 2 * n_aug_ + 1);
   AugmentedSigmaPoints(Xsig_aug);
-  cout << "Augemented sigma points" << endl << Xsig_aug << endl;
+//  cout << "Augemented sigma points" << endl << Xsig_aug << endl;
 
   // 2. Predict sigma points
   SigmaPointPrediction(Xsig_aug, delta_t);
-  cout << "Predicted sigma points" << endl << Xsig_pred_ << endl;
+//  cout << "Predicted sigma points" << endl << Xsig_pred_ << endl;
 
   // 3. Predict mean and covariance
   PredictMeanAndCovariance();
-//  cout << "Predicted x_ " << x_ << endl;
-//  cout << "Predicted P_ " << P_ << endl;
+//  cout << "Predicted x_ " << endl << x_ << endl;
+//  cout << "Predicted P_ " << endl << P_ << endl;
 
 }
 
@@ -294,38 +294,33 @@ void UKF::SigmaPointPrediction(const MatrixXd& Xsig_aug, double delta_t) {
 void UKF::PredictMeanAndCovariance() {
 
   int n_sig = 2 * n_aug_ + 1;
-  cout << "M_PI " << M_PI << endl;
 
   // predict state mean
   x_.fill(0.0);
   for (uint i = 0; i < n_sig; i++) {
     x_ += weights_(i) * Xsig_pred_.col(i);
   }
-  cout << "Predicted x_\n" << x_ << endl;
+//  cout << "Predicted x_\n" << x_ << endl;
 
   //predict state covariance matrix
   P_.fill(0.0);
   for (uint i = 0; i < n_sig; i++) {
     // state difference
     VectorXd x_diff = Xsig_pred_.col(i) - x_;
-//    cout << "x_diff\n" << x_diff << endl;
 
     //angle normalization
     while (x_diff(3) > M_PI) {
       double fac = floor(fabs(x_diff(3)) / M_PI) * M_PI;
       x_diff(3) -= fac;
-//      cout << "decremented by "<< fac << ", x_diff(3) " << x_diff(3) << endl;
     }
     while (x_diff(3) < -M_PI) {
       double fac = floor(fabs(x_diff(3)) / M_PI) * M_PI;
       x_diff(3) += fac;
-//      cout << "incremented by " << fac << ", x_diff(3) " << x_diff(3) << endl;
     }
-//    cout << "normalized yaw" << endl;
 
     P_ = P_ + weights_(i) * x_diff * x_diff.transpose();
   }
-  cout << "Predicted P_\n" << P_ << endl;
+//  cout << "Predicted P_\n" << P_ << endl;
 
 }
 
@@ -355,19 +350,19 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   MatrixXd S(n_lasz_, n_lasz_);
 
   PredictLaserMeasurement(Zsig, z_pred, S);
-  cout
-      << "Predicted laser measurements" << endl
-      << "Zsig\n" << Zsig << endl
-      << "z_pred\n" << z_pred << endl
-      << "S\n" << S << endl;
+//  cout
+//      << "Predicted laser measurements" << endl
+//      << "Zsig\n" << Zsig << endl
+//      << "z_pred\n" << z_pred << endl
+//      << "S\n" << S << endl;
 
   // 2. Update belief about object's position
   UpdateStateUsingLaserMeasurement(meas_package, Zsig, z_pred, S);
-  cout
-      << "Updated measurements" << endl
-      << "x_\n" << x_ << endl
-      << "P_\n" << P_ << endl
-      <<"NIS_laser_ " << NIS_laser_ << endl;
+//  cout
+//      << "Updated measurements" << endl
+//      << "x_\n" << x_ << endl
+//      << "P_\n" << P_ << endl
+//      <<"NIS_laser_ " << NIS_laser_ << endl;
 
   for (auto it = nis_buckets_laser_.begin();
        it != nis_buckets_laser_.end(); it++) {
@@ -473,19 +468,19 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   MatrixXd S(n_radz_, n_radz_);
 
   PredictRadarMeasurement(Zsig, z_pred, S);
-  cout
-      << "Predicted radar measurements" << endl
-      << "Zsig\n" << Zsig << endl
-      << "z_pred\n" << z_pred << endl
-      << "S\n" << S << endl;
+//  cout
+//      << "Predicted radar measurements" << endl
+//      << "Zsig\n" << Zsig << endl
+//      << "z_pred\n" << z_pred << endl
+//      << "S\n" << S << endl;
 
   // 2. Update belief about object's position
   UpdateStateUsingRadarMeasurement(meas_package, Zsig, z_pred, S);
-  cout
-      << "Updated measurements" << endl
-      << "x_\n" << x_ << endl
-      << "P_\n" << P_ << endl
-      <<"NIS_radar_ " << NIS_radar_ << endl;
+//  cout
+//      << "Updated measurements" << endl
+//      << "x_\n" << x_ << endl
+//      << "P_\n" << P_ << endl
+//      <<"NIS_radar_ " << NIS_radar_ << endl;
 
   for (auto it = nis_buckets_radar_.begin();
        it != nis_buckets_radar_.end(); it++) {
